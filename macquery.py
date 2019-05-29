@@ -34,43 +34,57 @@ def search_macaddrs(api_key, macaddrs):
             'search': m,
             'output': 'vendor'
         }
-        log.info('searching for %s at %s' %( m, BASEURL))
+        log.info('searching for %s at %s' % (m, BASEURL))
         if debug:
             pprint.pprint(search_params)
 
         reply = requests.get(
             url=BASEURL,
-            params = search_params
+            params=search_params
         )
 
-        if reply.status_code == requests.codes.ok: 
+        if reply.status_code == requests.codes.ok:
+            log.info('search for %s returned status: 200' % (m))
             r[m] = reply.text
-        else: 
-            print "error on query to %s, status:  " % (BASEURL, 
+        else:
+            print "error on query to %s, status:  " % (BASEURL,
                                                        reply.status_code)
             sys.exit(1)
 
     return r
 
 
-# Get API key from environment
+'''
+Get API key from environment
+'''
+
+
 def get_api_key(args):
     if 'api_key' in args:
+        log.debug('using apikey %s' % args.api_key)
         return args.api_key
     else:
         print "api_key not defined or in environment as %s" % (ENV_VAR)
         sys.exit(1)
 
-# get the mac list
+
+'''
+get the mac list
+'''
 
 
 def get_macaddrs(args):
     macaddrs = args.macaddrs
     for m in macaddrs:
+        log.debug('testing macaddr %s' % (m))
         validate_mac(m)
+
     return macaddrs
 
-# Test mac address for required format
+
+'''
+ Test mac address for required format
+'''
 
 
 def validate_mac(macaddr):
@@ -127,7 +141,11 @@ def get_args():
     return args
 
 
-# setup logging
+'''
+setup logging
+'''
+
+
 def setup_logging(args):
     if args.debug:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
@@ -141,20 +159,28 @@ def setup_logging(args):
         log.basicConfig(format="%(levelname)s: %(message)s")
 
 
+'''
+starting point
+'''
+
+
 def main():
     # used as flags
     global debug, verbose
     debug = False
     verbose = False
 
+    # get c/l and check to be ready
     args = get_args()
     setup_logging(args)
     api_key = get_api_key(args)
     log.debug('api_key: %s' % (api_key))
- 
-    macaddrs=get_macaddrs(args)
+
+    # get macaddr and perform search
+    macaddrs = get_macaddrs(args)
     mac_map = search_macaddrs(api_key, macaddrs)
 
+    # output data in format C/L can use
     for m in mac_map:
         print "%s %s" % (m, mac_map[m])
 
