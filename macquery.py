@@ -60,9 +60,12 @@ Get API key from environment
 
 
 def get_api_key(args):
-    if 'api_key' in args:
-        log.debug('using apikey %s' % args.api_key)
+    if 'api_key' in args and len(args.api_key) > 0:
+        log.debug('using apikey "%s"' % args.api_key)
         return args.api_key
+    elif ENV_VAR in os.environ and len(os.environ[ENV_VAR]) > 0:
+        log.debug('using apikey from %s %s' % (ENV_VAR,os.environ[ENV_VAR]))
+        return os.environ[ENV_VAR]
     else:
         print "api_key not defined or in environment as %s" % (ENV_VAR)
         sys.exit(1)
@@ -128,7 +131,7 @@ def get_args():
                         action="store_true",
                         help="Show debugging output.")
     parser.add_argument("-A", "--api-key",
-                        default=os.environ[ENV_VAR],
+                        default='',
                         help="use a speicifc API KEY")
     parser.add_argument("macaddrs",
                         nargs="*",
